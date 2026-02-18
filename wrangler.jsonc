@@ -1,0 +1,7 @@
+{
+  "name": "my-hello-world-site",
+  "compatibility_date": "2026-02-18",
+  "assets": {
+    "directory": "." 
+  }
+}
