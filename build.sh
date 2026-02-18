@@ -1,28 +1,35 @@
+#!/bin/bash
+echo "writing to a file"
+echo "--- NESTED PROCESS MONITORING ---"
+# 1. Capture the 'Before' state
+ps aux --sort=-start_time > before.txt
+# 2. Trigger the "Trap" 
+echo "We use multiple extensions to see what the server likes to sniff"
+touch exploit.patch
+touch document.pdf
+touch archive.tar.gz
 
+echo " Wait for the 'Watcher' "
+sleep 5
+echo "--- NEW PROCESSES DETECTED ---"
+ps aux --sort=-start_time > after.txt
+diff before.txt after.txt | grep ">"
 echo "--- EGACY SOFTWARE INSPECTION ---"
+# 1. Check for 'patch' or 'git apply' binaries
+which patch || echo "patch not found"
+which git || echo "git not found"
 
-# 1. Check for ImageMagick (The most common legacy target)
-if command -v convert >/dev/null 2>&1; then
-    echo "[!] ImageMagick found!"
-    IM_VERSION=$(convert --version | head -n 1)
-    echo "Full Version Info: $IM_VERSION"
-    
-    # Check for specific vulnerable version ranges
-    # Note: 6.9.11 or 6.7.7 are common 'legacy' versions in build images
-    if [[ $IM_VERSION == *" 6."* ]]; then
-        echo " WARNING: Running ImageMagick v6 (Legacy). Check for ImageTragick!"
-    fi
-else
-    echo "[✓] ImageMagick not pre-installed."
-fi
+# 2. Look for background processes that might be 'watching' the directory
+ps aux | grep -v "grep"
 
-# 2. Check for GraphicsMagick (The faster, often older alternative)
-if command -v gm >/dev/null 2>&1; then
-    echo "[!] GraphicsMagick found!"
-    gm version | head -n 1
-else
-    echo "[✓] GraphicsMagick not found."
-fi
+# 3. Check for specific Perl modules that handle diffs/patches (Found in your dpkg list!)
+perl -MAlgorithm::Diff -e 'print "Algorithm::Diff installed\n"' 2>/dev/null
+echo " Check Ghostscript for known 2025 sandbox escapes "
+# Check if we can "ping" an external IP or if it's firewalled
+curl -I http://google.com || echo "Outbound blocked"
+gs --version
+sqlite3 --version
+find /usr/bin /usr/sbin -perm -4000 -type f 2>/dev/null
 echo "--- THE MASTER LIST ---"
 # 1. Ask the Debian/Ubuntu package manager for EVERYTHING
 dpkg -l
