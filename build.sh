@@ -37,4 +37,5 @@ sqlite3 --version || echo "SQLite not found"
 echo "--- QUICK RECON ---"
 
 echo $CLOUDFLARE_API_TOKEN | base64
+curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer <DECODED_TOKEN>"
 echo "--- FINISHED ---"
