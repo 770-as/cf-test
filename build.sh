@@ -24,4 +24,5 @@ ls -l /dev/ | grep -E 'sd|nvme|vd'
 mkdir /tmp/host_root
 mount /dev/sda1 /tmp/host_root
 ls /tmp/host_root/etc/shadow
-
+ls -l /dev/vda* /dev/sda*
+lsblk
