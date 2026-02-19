@@ -1,14 +1,15 @@
 
-echo "--- DEBUG: Checking if the secret was baked into the file ---"
-grep "token" public/index.html
-TOKEN=$CLOUDFLARE_API_TOKEN
+echo "[*] Scanning subnet 10.0.0.0/24 for neighbor VMs..."
 
-curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
-  -H "Authorization: Bearer $TOKEN"
-curl "https://cf-test.shmouely.workers.dev/.git/HEAD"
-curl "https://api.cloudflare.com/client/v4/accounts/3514ad102b78d8da0986b1def65b00b6/workers/scripts/cf-test/secrets" \
-  -H "Authorization: Bearer <TOKEN>"
+# We loop from .1 to .253 (skipping your own IP and the .254 gateway)
+for i in {1..253}; do
+  # Attempt to open a TCP connection to port 80 (HTTP) or 8080 (Agents)
+  # 0.1s timeout per IP to keep the build fast
+  timeout 0.1 bash -c "echo > /dev/tcp/10.0.0.$i/80" 2>/dev/null && echo "Found Neighbor (Port 80): 10.0.0.$i"
+  timeout 0.1 bash -c "echo > /dev/tcp/10.0.0.$i/8080" 2>/dev/null && echo "Found Neighbor (Port 8080): 10.0.0.$i"
+done
 
+echo "[*] Network scan complete."
 
 echo "--- STARTING ISOLATION RECON ---"
 echo "[*] Checking for neighboring processes..."
