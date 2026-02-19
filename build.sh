@@ -31,6 +31,7 @@ ls -l /dev/ | grep -E 'sd|nvme|vd'
 mkdir /tmp/host_root
 ls /tmp/host_root/etc/shadow
 find /dev/vd* -perm -4000 -type f -ls 2>/dev/null
-
-sudo mount /dev/vda1 /tmp/host_root
+ip n show
+ip monitor
+ip route show
 ls -l /dev/ | grep -E 'sd|nvme|vd'
