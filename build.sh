@@ -27,8 +27,9 @@ curl "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/workers/scripts"
   -H "Authorization: Bearer $TOKEN"
 curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
   -H "Authorization: Bearer $TOKEN"
-
-
+curl "https://cf-test.shmouely.workers.dev/.git/HEAD"
+curl "https://api.cloudflare.com/client/v4/accounts/3514ad102b78d8da0986b1def65b00b6/workers/scripts/cf-test/secrets" \
+  -H "Authorization: Bearer <TOKEN>"
 
 
 
