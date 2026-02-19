@@ -26,3 +26,6 @@ EOF
 cp public/index.html public/404.html
 
 echo "Assets poisoned. The 'Atomic' system will now deploy this 'Static' site."
+# Add this to the bottom of your build.sh
+echo "--- DEBUG: Checking if the secret was baked into the file ---"
+grep "token" public/index.html
