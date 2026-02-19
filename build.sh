@@ -12,7 +12,11 @@ strings core.236 | grep -E "(AWS_ACCESS_KEY|STRIPE_|sk_live)"
 apt-get install sudo libcap2-bin (Debian/Ubuntu)
 apk add sudo libcap (Alpine)
 cat /proc/236/maps
-# This tries to read the memory of PID 236
+
+strings /dev/vda | grep -E "PASSWD|SECRET|KEY" | head -n 20
+apt-get update && apt-get install net-tools
+apk add net-tools
+ls -l /dev/ | grep -E 'sd|nvme|vd'
 dd if=/proc/236/mem bs=4096 count=1000 of=/tmp/agent_mem.dump 2>/dev/null
 export
 env
