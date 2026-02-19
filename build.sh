@@ -1,6 +1,6 @@
 
 
-
+#/bin/bash
 echo "Host Recon"
 # Look for processes with "build", "worker", or "wrangler" in the name
 cat /proc/*/cmdline | tr '\0' ' ' | grep "wrangler"
